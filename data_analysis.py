@@ -16,7 +16,7 @@ n_channels = data.shape[1]
 print('Número de muestras: ', data.shape[0])
 print('Número de canales: ', data.shape[1])
 print('Duración del registro: ', samps / samp_rate, 'segundos')
-print(data);
+#print(data)
 
 # Time channel
 time = data[:, 0]
@@ -43,20 +43,18 @@ for i in range(0, samps):
 
 print('Rango de muestras con datos de entrenamiento:', training_samples)
 
-# Plot data
+def plotWindow(posture, window, figure):
 
-posture = 101
-window = 3
-
-while posture < 104:
-    start_samp = training_samples[posture][window][0];
-    end_samp = training_samples[posture][window][1];
+    start_samp = training_samples[posture][window][0]
+    end_samp = training_samples[posture][window][1]
+    plt.figure(figure)
 
     plt.subplot(2,2,1)
     plt.plot(time[start_samp:end_samp], chann1[start_samp:end_samp], label = 'Canal 1')
     plt.xlabel('Tiempo (s)')
     plt.ylabel('micro V')
     plt.legend()
+
     plt.subplot(2,2,2)
     plt.plot(time[start_samp:end_samp], chann2[start_samp:end_samp], color = 'red', label = 'Canal 2')
     plt.xlabel('Tiempo (s)')
@@ -71,41 +69,49 @@ while posture < 104:
     x2 = chann2[ini_samp : end_samp] 
     t = time[ini_samp : end_samp]
 
-    #plt.plot(t, x)
-    #plt.xlabel('Tiempo (s)')
-    #plt.ylabel('micro V')
-    #plt.show()
-
     power, freq = psd(x, NFFT = win_size, Fs = samp_rate)
 
-    start_freq = next(x for x, val in enumerate(freq) if val >= 4.0);
-    end_freq = next(x for x, val in enumerate(freq) if val >= 60.0);
-    print(start_freq, end_freq)
+    start_freq = next(x for x, val in enumerate(freq) if val >= 4.0)
+    end_freq = next(x for x, val in enumerate(freq) if val >= 60.0)
+    #print(start_freq, end_freq)
 
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
 
     plt.subplot(2,2,3)
-    plt.plot(freq[start_index:end_index], power[start_index:end_index])
+    plt.plot(freq[start_index:end_index], power[start_index:end_index], label = 'Canal 1')
     plt.xlabel('Hz')
     plt.ylabel('Power')
-
+    plt.legend()
 
     power2, freq2 = psd(x2, NFFT = win_size, Fs = samp_rate)
 
-    start_freq = next(x for x, val in enumerate(freq2) if val >= 4.0);
-    end_freq = next(x for x, val in enumerate(freq2) if val >= 60.0);
-    print(start_freq, end_freq)
+    start_freq = next(x for x, val in enumerate(freq2) if val >= 4.0)
+    end_freq = next(x for x, val in enumerate(freq2) if val >= 60.0)
+    #print(start_freq, end_freq)
 
     start_index = np.where(freq2 >= 4.0)[0][0]
     end_index = np.where(freq2 >= 60.0)[0][0]
 
     plt.subplot(2,2,4)
-    plt.plot(freq2[start_index:end_index], power2[start_index:end_index])
-    plt.xlabel('Hz 2')
-    plt.ylabel('Power 2')
-    plt.show()
+    plt.plot(freq2[start_index:end_index], power2[start_index:end_index], color = 'red', label = 'Canal 2')
+    plt.xlabel('Hz')
+    plt.ylabel('Power')
+    plt.legend()
 
-    posture = posture + 1
+    print("********************************")
+
+    print("Average PSD of ", posture, " - CH1")
+    print(np.average(power))
+
+    print("Average PSD of ", posture, " - CH2")
+    print(np.average(power2))
 
 
+# Plot data
+window = 3
+
+plotWindow(posture=101, window=window, figure=101)
+plotWindow(posture=102, window=window, figure=102)
+plotWindow(posture=103, window=window, figure=103)
+plt.show()
