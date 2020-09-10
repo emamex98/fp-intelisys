@@ -58,7 +58,7 @@ ys = []
 # Initialize communication with sensor
 
 # This function is called periodically from FuncAnimation
-def animate(i, xs, ys, samp_count=0, start_time=start_time):
+def animate(i, xs, ys, channel, samp_count=0, start_time=start_time):
 
     # Read data from socket
     try:
@@ -84,7 +84,7 @@ def animate(i, xs, ys, samp_count=0, start_time=start_time):
         pass  
 
 
-    power = [row[samp_count-1] for row in emg_data][0]
+    power = [row[samp_count-1] for row in emg_data][channel-1]
 
     # Add x and y to lists
     xs.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
@@ -101,10 +101,10 @@ def animate(i, xs, ys, samp_count=0, start_time=start_time):
     # Format plot
     plt.xticks(rotation=45, ha='right')
     plt.subplots_adjust(bottom=0.30)
-    plt.title('REAL TIME INOUT')
+    plt.title('REAL TIME INPUT')
 
 # Set up plot to call animate() function periodically
-ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys), interval=1000)
+ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys, 1), interval=1000)
 plt.show()
     
     
