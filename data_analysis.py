@@ -107,11 +107,24 @@ def plotWindow(posture, window, figure):
     print("Average PSD of ", posture, " - CH2")
     print(np.average(power2))
 
+    return [np.average(power), np.average(power2)]
+
 
 # Plot data
 window = 3
 
-plotWindow(posture=101, window=window, figure=101)
-plotWindow(posture=102, window=window, figure=102)
-plotWindow(posture=103, window=window, figure=103)
+avg101 = plotWindow(posture=101, window=window, figure=101)
+avg102 = plotWindow(posture=102, window=window, figure=102)
+avg103 = plotWindow(posture=103, window=window, figure=103)
+
+print(avg101)
+
+plt.figure(1)
+plt.plot([101, 102, 103], [avg101[0], avg102[0], avg103[0]], label = 'Canal 1')
+plt.plot([101, 102, 103], [avg101[1], avg102[1], avg103[1]], label = 'Canal 2', color="red")
+plt.xticks(np.arange(101, 104))
+plt.xlabel('Position')
+plt.ylabel('Average PSD')
+plt.legend()
+
 plt.show()
