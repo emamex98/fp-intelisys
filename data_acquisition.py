@@ -4,10 +4,10 @@
 import time
 import socket
 import numpy as np
-
 import datetime as dt
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.mlab import psd
 
 # Data configuration
 n_channels = 5
@@ -54,6 +54,7 @@ fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 xs = []
 ys = []
+powers = []
 
 # Initialize communication with sensor
 
@@ -85,6 +86,10 @@ def animate(i, xs, ys, channel, samp_count=0, start_time=start_time):
 
 
     power = [row[samp_count-1] for row in emg_data][channel-1]
+
+    powers.append(power)
+    psd_pow, freq = psd(powers, NFFT = 256, Fs = 256)
+    print(psd_pow)
 
     # Add x and y to lists
     xs.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
