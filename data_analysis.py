@@ -51,8 +51,8 @@ window_size = 256
 for posture in training_samples:
     #emg_data[posture] = []
     print(posture)
-    psd_data_ch1[posture] = np.empty((1,57))
-    psd_data_ch2[posture] = np.empty((1,57))
+    #input()
+    
     for interval in training_samples[posture]:
         start_samp = interval[0]
         end_samp = interval[1]
@@ -70,6 +70,10 @@ for posture in training_samples:
             end_freq = next(j for j, val in enumerate(freq) if val >= 60.0)
             start_index = np.where(freq >= 4.0)[0][0]
             end_index = np.where(freq >= 60.0)[0][0]
+            if not posture in psd_data_ch1:
+                psd_data_ch1[posture] = np.empty((0,end_index-start_index+1))
+            print(psd_data_ch1[posture])
+            #input()
             psd_data_ch1[posture] = np.append(psd_data_ch1[posture],[power[start_index:end_index+1]], axis=0)
 
             power2, freq2 = psd(x2, NFFT = window_size, Fs = samp_rate)
@@ -77,9 +81,11 @@ for posture in training_samples:
             end_freq = next(j for j, val in enumerate(freq2) if val >= 60.0)
             start_index = np.where(freq2 >= 4.0)[0][0]
             end_index = np.where(freq2 >= 60.0)[0][0]
+            if not posture in psd_data_ch2:
+                psd_data_ch2[posture] = np.empty((0,end_index-start_index+1))
 
-            psd_data_ch2[posture] = np.append(psd_data_ch2[posture],[power2[start_index:end_index+1]], axis=0)
-           
+            psd_data_ch2[posture] = np.append(psd_data_ch2[posture],[power2[start_index:end_index+1]], axis=0)           
+            
             start_samp += window_size
 print(psd_data_ch1['101.0'][0])
 avg_psd_ch1 = {}
