@@ -3,8 +3,10 @@
 #------------------------------------------------------------------------------------------------------------------
 
 import numpy as np
+import json
 import matplotlib.pyplot as plt
 from matplotlib.mlab import psd
+import data_construction as dc
 
 
 # Read data file
@@ -72,7 +74,6 @@ for posture in training_samples:
             end_index = np.where(freq >= 60.0)[0][0]
             if not posture in psd_data_ch1:
                 psd_data_ch1[posture] = np.empty((0,end_index-start_index+1))
-            # print(psd_data_ch1[posture])
             psd_data_ch1[posture] = np.append(psd_data_ch1[posture],[power[start_index:end_index+1]], axis=0)
 
             power2, freq2 = psd(x2, NFFT = window_size, Fs = samp_rate)
@@ -102,6 +103,16 @@ for posture in training_samples:
 
 freq = [x for x in range(4,61)]
 
+for posture in psd_data_ch1:
+    psd_data_ch1[posture] = psd_data_ch1[posture].tolist()
+    psd_data_ch2[posture] = psd_data_ch2[posture].tolist()
+
+#json.dump(psd_data_ch1, open('psd_ch1.json', 'w'))
+#json.dump(psd_data_ch2, open('psd_ch2.json', 'w'))
+
+x, y = dc.create_matrix(psd_data_ch1, psd_data_ch2)
+#print(x)
+#print(y)
 # Plot Averge PSDs
 
 def plotAvg(figure, posture, title):
