@@ -72,8 +72,7 @@ for posture in training_samples:
             end_index = np.where(freq >= 60.0)[0][0]
             if not posture in psd_data_ch1:
                 psd_data_ch1[posture] = np.empty((0,end_index-start_index+1))
-            print(psd_data_ch1[posture])
-            #input()
+            # print(psd_data_ch1[posture])
             psd_data_ch1[posture] = np.append(psd_data_ch1[posture],[power[start_index:end_index+1]], axis=0)
 
             power2, freq2 = psd(x2, NFFT = window_size, Fs = samp_rate)
@@ -87,9 +86,10 @@ for posture in training_samples:
             psd_data_ch2[posture] = np.append(psd_data_ch2[posture],[power2[start_index:end_index+1]], axis=0)           
             
             start_samp += window_size
-print(psd_data_ch1['101.0'][0])
+
 avg_psd_ch1 = {}
 avg_psd_ch2 = {}
+
 for posture in training_samples:
     avg_psd_ch1[posture] = []
     avg_psd_ch2[posture] = []
@@ -99,23 +99,35 @@ for posture in training_samples:
     div2 = np.true_divide(sum2,57)
     avg_psd_ch1[posture].append(list(div1))
     avg_psd_ch2[posture].append(list(div2))
-#print(avg_psd_ch2)
+
 freq = [x for x in range(4,61)]
 
-def plotWindow(posture, window, figure):
+# Plot Averge PSDs
+
+def plotAvg(figure, posture, title):
+    plt.figure(figure)
+    plt.plot(freq, avg_psd_ch1[posture][0], label = 'Channel 1', color="blue")
+    plt.plot(freq, avg_psd_ch2[posture][0] , label = 'Channel 2', color="red")
+    plt.xticks(np.arange(4, 60))
+    plt.xlabel('Hz')
+    plt.ylabel('Power')
+    plt.title("Average PSD of " + title)
+    plt.legend()
+
+def plotWindow(figure, posture, window):
 
     start_samp = training_samples[posture][window][0]
     end_samp = training_samples[posture][window][1]
     plt.figure(figure)
 
     plt.subplot(2,2,1)
-    plt.plot(time[start_samp:end_samp], chann1[start_samp:end_samp], label = 'Canal 1')
+    plt.plot(time[start_samp:end_samp], chann1[start_samp:end_samp], label = 'Channel 1')
     plt.xlabel('Tiempo (s)')
     plt.ylabel('micro V')
     plt.legend()
 
     plt.subplot(2,2,2)
-    plt.plot(time[start_samp:end_samp], chann2[start_samp:end_samp], color = 'red', label = 'Canal 2')
+    plt.plot(time[start_samp:end_samp], chann2[start_samp:end_samp], color = 'red', label = 'Channel 2')
     plt.xlabel('Tiempo (s)')
     plt.ylabel('micro V')
     plt.legend()
@@ -157,40 +169,15 @@ def plotWindow(posture, window, figure):
     plt.ylabel('Power')
     plt.legend()
 
-    print("********************************")
+# Plot averages
+plotAvg(figure=101, posture='101.0', title="Posture 101")
+plotAvg(figure=102, posture='102.0', title="Posture 102")
+plotAvg(figure=103, posture='103.0', title="Posture 103")
 
-    print("Average PSD of ", posture, " - CH1")
-    print(np.average(power))
-
-    print("Average PSD of ", posture, " - CH2")
-    print(np.average(power2))
-
-    return [np.average(power), np.average(power2)]
-
-
-# Plot data
-#window = 3
-
-#avg101 = plotWindow(posture='101.0', window=window, figure=101)
-#avg102 = plotWindow(posture='102.0', window=window, figure=102)
-#avg103 = plotWindow(posture='103.0', window=window, figure=103)
-
-#print(avg101)
-plt.figure(101)
-#plt.subplot(1,2,1)
-plt.plot(freq, avg_psd_ch1['101.0'][0], label = 'Canal 1', color="blue")
-#plt.plot(freq, avg_psd_ch2['101.0'][0] , label = 'Canal 2', color="red")
-plt.xticks(np.arange(4, 60))
-plt.xlabel('Hz')
-plt.ylabel('Power')
-plt.legend()
-
-plt.figure(1012)
-#plt.subplot(1,2,2)
-plt.plot(freq, avg_psd_ch2['101.0'][0] , label = 'Canal 2', color="red")
-plt.xticks(np.arange(4, 60))
-plt.xlabel('Hz')
-plt.ylabel('Power')
-plt.legend()
+# Plot data window
+window = 3
+plotWindow(figure=201, posture='101.0', window=window)
+plotWindow(figure=202, posture='102.0', window=window)
+plotWindow(figure=203, posture='103.0', window=window)
 
 plt.show()
