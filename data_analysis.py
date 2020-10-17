@@ -7,6 +7,7 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib.mlab import psd
 import data_construction as dc
+import classifiers as classifiers
 
 
 # Read data file
@@ -192,3 +193,12 @@ plotWindow(figure=202, posture='102.0', window=window)
 plotWindow(figure=203, posture='103.0', window=window)
 
 plt.show()
+
+print("SVD Lineal")
+classifiers.svd_lineal(x,y)
+print("SVD Radial Base")
+classifiers.svd_radial(x,y)
+print("KNN")
+classifiers.knn(x,y)
+print("Decision Tree")
+classifiers.decision_tree(x,y)
