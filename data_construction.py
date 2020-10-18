@@ -1,4 +1,5 @@
 import numpy as np
+from keras.utils import to_categorical
 
 def create_matrix(psd_ch1, psd_ch2):
     matrix_x = np.empty([270, 114])
@@ -14,8 +15,12 @@ def create_matrix(psd_ch1, psd_ch2):
                 matrix_x[i][j] = psd_ch1[posture][array][n]
                 matrix_x[i][57+j] = psd_ch2[posture][array][n]
                 j+=1
-            matrix_y[i] = posture
+            matrix_y[i] = float(posture)
             j=0
             i+=1
     matrix_y = np.array(matrix_y)
     return matrix_x, matrix_y
+
+def hot_encoding(y):
+    y_categorical = to_categorical(y)
+    return y_categorical

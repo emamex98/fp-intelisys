@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn import datasets
 from sklearn import svm
 from sklearn.model_selection import KFold
@@ -5,6 +6,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import np_utils
 
 def train(x,y,clf,kf):
     acc = 0
@@ -55,4 +59,39 @@ def knn(x,y):
     clf = KNeighborsClassifier(n_neighbors=3)
 
     train(x,y,clf,kf)
+
+def nn_multilayer(x,y,yC):
+    n_features = x.shape[1]
+    kf = KFold(n_splits=5, shuffle = True)
+    acc = 0
+    recall = np.array([0., 0.])
+    for train_index, test_index in kf.split(x):
+        # Training phase
+        x_train = x[train_index, :]
+        #y_train = y[train_index]
+        yC_train = yC[train_index]
+        
+        clf = Sequential()
+        clf.add(Dense(128, input_dim=n_features, activation='relu'))
+        clf.add(Dense(128, activation='sigmoid'))
+        clf.add(Dense(104, activation='softmax'))
+        clf.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        clf.fit(x_train, yC_train, epochs=100, batch_size=8)    
+
+        # Test phase
+        x_test = x[test_index, :]
+        #y_test = y[test_index]
+        yC_test = yC[test_index]
+        y_pred = (clf.predict(x_test) > 0.5).astype("int32")
+        
+        cm = confusion_matrix(yC_test.argmax(axis=1), y_pred.argmax(axis=1))
+        print(cm)
+        acc += (cm[0,0]+cm[1,1])/len(yC_test.argmax(axis=1))
+        recall[0] += cm[0,0]/(cm[0,0] + cm[0,1])
+        recall[1] += cm[1,1]/(cm[1,0] + cm[1,1])
+    acc = acc/5
+    print(recall)
+    recall = recall/5
+    print('Acc: ', acc)
+    print('Recall:', recall)
 

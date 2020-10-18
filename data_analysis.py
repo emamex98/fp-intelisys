@@ -194,6 +194,9 @@ plotWindow(figure=203, posture='103.0', window=window)
 
 plt.show()
 
+print("Multilayer NN")
+yC = dc.hot_encoding(y)
+classifiers.nn_multilayer(x,y,yC)
 print("SVD Lineal")
 classifiers.svd_lineal(x,y)
 print("SVD Radial Base")
