@@ -23,7 +23,7 @@ def train(x,y,clf,kf):
         x_test = x[test_index, :]
         y_test = y[test_index]    
         y_pred = clf.predict(x_test)
-
+        print(y_pred)
         # Calculate confusion matrix and model performance
         cm = confusion_matrix(y_test, y_pred)
         acc_i = (cm[0,0]+cm[1,1]+cm[2,2])/len(y_test)    
@@ -40,6 +40,8 @@ def svd_lineal(x,y):
     clf = svm.SVC(kernel = 'linear')
 
     train(x,y,clf,kf)
+
+    return clf
 
 def svd_radial(x,y):
     kf = KFold(n_splits=5, shuffle = True)
