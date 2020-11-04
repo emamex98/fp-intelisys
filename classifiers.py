@@ -60,33 +60,158 @@ def knn(x,y):
 
     train(x,y,clf,kf)
 
-def nn_multilayer(x,y,yC):
+def nn_singlelayer_3c(x,y):
     n_features = x.shape[1]
     kf = KFold(n_splits=5, shuffle = True)
     acc = 0
-    recall = np.array([0., 0.])
+    recall = np.array([0., 0., 0.])
+
+    y = y-101
+
     for train_index, test_index in kf.split(x):
         # Training phase
         x_train = x[train_index, :]
         #y_train = y[train_index]
-        yC_train = yC[train_index]
-        
+        yC_train = y[train_index]
+        yC_train = np_utils.to_categorical(yC_train)
+
         clf = Sequential()
-        clf.add(Dense(128, input_dim=n_features, activation='relu'))
-        clf.add(Dense(128, activation='sigmoid'))
-        clf.add(Dense(104, activation='softmax'))
-        clf.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        clf.fit(x_train, yC_train, epochs=100, batch_size=8)    
+        clf.add(Dense(8, input_dim=n_features, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(3, activation='softmax'))
+        clf.compile(loss='categorical_crossentropy', optimizer='adam')
+        clf.fit(x_train, yC_train, epochs=100, batch_size=8, verbose=0)    
 
         # Test phase
         x_test = x[test_index, :]
         #y_test = y[test_index]
-        yC_test = yC[test_index]
-        y_pred = (clf.predict(x_test) > 0.5).astype("int32")
+        yC_test = y[test_index]
+        y_pred = np.argmax(clf.predict(x_test), axis=-1)
         
-        cm = confusion_matrix(yC_test.argmax(axis=1), y_pred.argmax(axis=1))
-        print(cm)
-        acc += (cm[0,0]+cm[1,1])/len(yC_test.argmax(axis=1))
+        cm = confusion_matrix(yC_test, y_pred)
+        #print(cm)
+        acc += (cm[0,0]+cm[1,1]+cm[2,2])/len(yC_test)
+        recall[0] += cm[0,0]/(cm[0,0] + cm[0,1] + cm[0,2])
+        recall[1] += cm[1,1]/(cm[1,0] + cm[1,1] + cm[1,2])
+        recall[2] += cm[2,2]/(cm[2,0] + cm[2,1] + cm[2,2])
+    acc = acc/5
+    print(recall)
+    recall = recall/5
+    print('Acc: ', acc)
+    print('Recall:', recall)
+
+def nn_multilayer_3c(x,y):
+    n_features = x.shape[1]
+    kf = KFold(n_splits=5, shuffle = True)
+    acc = 0
+    recall = np.array([0., 0., 0.])
+
+    y = y-101
+
+    for train_index, test_index in kf.split(x):
+        # Training phase
+        x_train = x[train_index, :]
+        #y_train = y[train_index]
+        yC_train = y[train_index]
+        yC_train = np_utils.to_categorical(yC_train)
+
+        clf = Sequential()
+        clf.add(Dense(8, input_dim=n_features, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(3, activation='softmax'))
+        clf.compile(loss='categorical_crossentropy', optimizer='adam')
+        clf.fit(x_train, yC_train, epochs=100, batch_size=8, verbose=0)    
+
+        # Test phase
+        x_test = x[test_index, :]
+        #y_test = y[test_index]
+        yC_test = y[test_index]
+        y_pred = np.argmax(clf.predict(x_test), axis=-1)
+        
+        cm = confusion_matrix(yC_test, y_pred)
+        #print(cm)
+        acc += (cm[0,0]+cm[1,1]+cm[2,2])/len(yC_test)
+        recall[0] += cm[0,0]/(cm[0,0] + cm[0,1] + cm[0,2])
+        recall[1] += cm[1,1]/(cm[1,0] + cm[1,1] + cm[1,2])
+        recall[2] += cm[2,2]/(cm[2,0] + cm[2,1] + cm[2,2])
+    acc = acc/5
+    print(recall)
+    recall = recall/5
+    print('Acc: ', acc)
+    print('Recall:', recall)
+
+def nn_singlelayer_2c(x,y):
+    n_features = x.shape[1]
+    kf = KFold(n_splits=5, shuffle = True)
+    acc = 0
+    recall = np.array([0., 0.])
+
+    y = y-101
+
+    for train_index, test_index in kf.split(x):
+        # Training phase
+        x_train = x[train_index, :]
+        #y_train = y[train_index]
+        yC_train = y[train_index]        
+
+        clf = Sequential()
+        clf.add(Dense(8, input_dim=n_features, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(1, activation='sigmoid'))
+        clf.compile(loss='binary_crossentropy', optimizer='adam')
+        clf.fit(x_train, yC_train, epochs=100, batch_size=8, verbose=0)    
+
+        # Test phase
+        x_test = x[test_index, :]
+        #y_test = y[test_index]
+        yC_test = y[test_index]
+        y_pred = (clf.predict(x_test)>0.5).astype("int32")
+        
+        cm = confusion_matrix(yC_test, y_pred)
+        #print(cm)
+        acc += (cm[0,0]+cm[1,1])/len(yC_test)
+        recall[0] += cm[0,0]/(cm[0,0] + cm[0,1])
+        recall[1] += cm[1,1]/(cm[1,0] + cm[1,1])
+    acc = acc/5
+    print(recall)
+    recall = recall/5
+    print('Acc: ', acc)
+    print('Recall:', recall)
+
+def nn_multilayer_2c(x,y):
+    n_features = x.shape[1]
+    kf = KFold(n_splits=5, shuffle = True)
+    acc = 0
+    recall = np.array([0., 0.])
+
+    y = y-101
+
+    for train_index, test_index in kf.split(x):
+        # Training phase
+        x_train = x[train_index, :]
+        #y_train = y[train_index]
+        yC_train = y[train_index]        
+
+        clf = Sequential()
+        clf.add(Dense(8, input_dim=n_features, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(8, activation='relu'))
+        clf.add(Dense(1, activation='sigmoid'))
+        clf.compile(loss='binary_crossentropy', optimizer='adam')
+        clf.fit(x_train, yC_train, epochs=100, batch_size=8, verbose=0)    
+
+        # Test phase
+        x_test = x[test_index, :]
+        #y_test = y[test_index]
+        yC_test = y[test_index]
+        y_pred = (clf.predict(x_test)>0.5).astype("int32")
+        
+        cm = confusion_matrix(yC_test, y_pred)
+        #print(cm)
+        acc += (cm[0,0]+cm[1,1])/len(yC_test)
         recall[0] += cm[0,0]/(cm[0,0] + cm[0,1])
         recall[1] += cm[1,1]/(cm[1,0] + cm[1,1])
     acc = acc/5

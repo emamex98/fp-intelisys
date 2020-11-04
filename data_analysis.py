@@ -194,9 +194,20 @@ plotWindow(figure=203, posture='103.0', window=window)
 
 plt.show()
 
-print("Multilayer NN")
-yC = dc.hot_encoding(y)
-classifiers.nn_multilayer(x,y,yC)
+if len(training_samples)==3:
+    print("Singlelayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_singlelayer_3c(x,y)
+    print("Multilayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_multilayer_3c(x,y)
+elif len(training_samples)==2:
+    print("Singlelayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_singlelayer_2c(x,y)
+    print("Multilayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_multilayer_2c(x,y)
 print("SVD Lineal")
 classifiers.svd_lineal(x,y)
 print("SVD Radial Base")
