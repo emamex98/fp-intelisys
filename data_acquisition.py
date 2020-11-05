@@ -12,6 +12,7 @@ from matplotlib.mlab import psd
 # Data configuration
 n_channels = 5
 samp_rate = 256
+win_size = 256
 emg_data = [[] for i in range(n_channels)]
 samp_count = 0
 
@@ -22,44 +23,52 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((UDP_IP, UDP_PORT))
 sock.settimeout(0.01)
 
+# Global variables
+psd_chann1 = []
+psd_chann2 = []
+freq_chann1 = []
+freq_chann2 = []
+
+# Set plot figures
+fig = plt.figure()
+
+ax_emg_chann1 = fig.add_subplot(2,2,1)
+ax_emg_chann1.title.set_text('Loading Data...')
+ax_emg_chann1.set_xlabel('Time')
+ax_emg_chann1.set_ylabel('micro V')
+
+ax_emg_chann2 = fig.add_subplot(2,2,2)
+ax_emg_chann2.title.set_text('Loading Data...')
+ax_emg_chann2.set_xlabel('Time')
+ax_emg_chann2.set_ylabel('micro V')
+
+ax_psd_chann1 = fig.add_subplot(2,2,3)
+ax_psd_chann1.title.set_text('Loading Data...')
+ax_psd_chann1.set_xlabel('Hz')
+ax_psd_chann1.set_ylabel('Power')
+
+ax_psd_chann2 = fig.add_subplot(2,2,4)
+ax_psd_chann2.title.set_text('Loading Data...')
+ax_psd_chann2.set_xlabel('Hz')
+ax_psd_chann2.set_ylabel('Power')
+
 # Data acquisition
 start_time = time.time()
 
-# while True:
-    # try:
-    #     data, addr = sock.recvfrom(1024*1024)                        
-            
-    #     values = np.frombuffer(data)       
-    #     ns = int(len(values)/n_channels)
-    #     samp_count+=ns        
+# Calculate PSD
+def calcPSD(channel, win_size, samp_rate):
 
-    #     for i in range(ns):
-    #         for j in range(n_channels):
-    #             emg_data[j].append(values[n_channels*i + j])
-            
-    #     elapsed_time = time.time() - start_time
-    #     if (elapsed_time > 0.1):
-    #         start_time = time.time()
-    #         print ("Muestras: ", ns)
-    #         print ("Cuenta: ", samp_count)
-    #         print ("Última lectura: ", [row[samp_count-1] for row in emg_data])
-    #         print("")
-            
-    # except socket.timeout:
-    #     pass  
+    power, freq = psd(channel, NFFT=win_size, Fs=samp_rate)
 
+    start_index = np.where(freq >= 4.0)[0][0]
+    end_index = np.where(freq >= 60.0)[0][0]
 
-# Create figure for plotting
-fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1)
-xs = []
-ys = []
-powers = []
+    return power[start_index:end_index], freq[start_index:end_index]
 
-# Initialize communication with sensor
+# Realtime plot function
+def animate(i, start_time=start_time):
 
-# This function is called periodically from FuncAnimation
-def animate(i, xs, ys, channel, samp_count=0, start_time=start_time):
+    global samp_count
 
     # Read data from socket
     try:
@@ -67,50 +76,75 @@ def animate(i, xs, ys, channel, samp_count=0, start_time=start_time):
             
         values = np.frombuffer(data)       
         ns = int(len(values)/n_channels)
-        samp_count+=ns        
+        samp_count+=ns
 
-        for i in range(ns):
-            for j in range(n_channels):
+        for i in range(ns):            
+            for j in range(n_channels):                
                 emg_data[j].append(values[n_channels*i + j])
-            
+
         elapsed_time = time.time() - start_time
-        if (elapsed_time > 0.1):
+
+        if (elapsed_time > 2 and samp_count >= win_size):
+
             start_time = time.time()
-            print ("Muestras: ", ns)
-            print ("Cuenta: ", samp_count)
-            print ("Última lectura: ", [row[samp_count-1] for row in emg_data])
-            print("")
+            
+            chann1 = emg_data[0][-win_size:]
+            chann2 = emg_data[2][-win_size:]
+
+            #### Validación que puede ayudar a reducir ruido más adelante
+
+            # for i in range(len(chann1)):
+            #     if chann1[i] > 100:
+            #         chann1[i] = 0
+
+            # for i in range(len(chann2)):
+            #     if chann2[i] > 100:
+            #         chann2[i] = 0
+
+            ####
+
+            psd_chann1, freq_chann1 = calcPSD(chann1, win_size, samp_rate)
+            psd_chann2, freq_chann2 = calcPSD(chann2, win_size, samp_rate)
+
+            time_axis = []
+            inc = 2 / len(chann1)
+            for i in range(len(chann1)):
+                time_axis.append(elapsed_time)
+                elapsed_time += inc
+
+            # Plot EMG - Channel 1
+            ax_emg_chann1.clear()
+            ax_emg_chann1.plot(time_axis, chann1)
+            ax_emg_chann1.title.set_text('EMG - Channel 1')
+            ax_emg_chann1.set_xlabel('Time')
+            ax_emg_chann1.set_ylabel('micro V')
+
+            # Plot EMG - Channel 2
+            ax_emg_chann2.clear()
+            ax_emg_chann2.plot(time_axis, chann2, color='red')
+            ax_emg_chann2.title.set_text('EMG - Channel 2')
+            ax_emg_chann2.set_xlabel('Time')
+            ax_emg_chann2.set_ylabel('micro V')
+
+            # Plot PSD - Channel 1
+            ax_psd_chann1.clear()
+            ax_psd_chann1.plot(freq_chann1, psd_chann1)
+            ax_psd_chann1.title.set_text('PSD - Channel 1')
+            ax_psd_chann1.set_xlabel('Hz')
+            ax_psd_chann1.set_ylabel('Power')
+
+            # Plot PSD - Channel 2
+            ax_psd_chann2.clear()
+            ax_psd_chann2.plot(freq_chann2, psd_chann2, color='red')
+            ax_psd_chann2.title.set_text('PSD - Channel 2')
+            ax_psd_chann2.set_xlabel('Hz')
+            ax_psd_chann2.set_ylabel('Power')
+            
             
     except socket.timeout:
         pass  
 
-
-    power = [row[samp_count-1] for row in emg_data][channel-1]
-
-    powers.append(power)
-    psd_pow, freq = psd(powers, NFFT = 256, Fs = 256)
-    print(psd_pow)
-
-    # Add x and y to lists
-    xs.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
-    ys.append(power)
-
-    # Limit x and y lists to 20 items
-    xs = xs[-20:]
-    ys = ys[-20:]
-
-    # Draw x and y lists
-    ax.clear()
-    ax.plot(xs, ys)
-
-    # Format plot
-    plt.xticks(rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.30)
-    plt.title('REAL TIME INPUT')
-
 # Set up plot to call animate() function periodically
-ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys, 1), interval=1000)
+ani = animation.FuncAnimation(fig, animate, interval=2000)
+plt.tight_layout()
 plt.show()
-    
-    
-
