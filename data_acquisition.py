@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 from matplotlib.mlab import psd
 
 # Data configuration
-n_channels = 6
+n_channels = 5
 samp_rate = 256
 win_size = 256
 emg_data = [[] for i in range(n_channels)]
@@ -76,10 +76,10 @@ def animate(i, start_time=start_time):
             
         values = np.frombuffer(data)       
         ns = int(len(values)/n_channels)
-        samp_count+=ns        
+        samp_count+=ns
 
-        for i in range(ns):
-            for j in range(n_channels):
+        for i in range(ns):            
+            for j in range(n_channels):                
                 emg_data[j].append(values[n_channels*i + j])
 
         elapsed_time = time.time() - start_time
@@ -91,16 +91,15 @@ def animate(i, start_time=start_time):
             chann1 = emg_data[0][-win_size:]
             chann2 = emg_data[2][-win_size:]
 
+            #### Validación que puede ayudar a reducir ruido más adelante
 
-            #### TODO: Preguntar al profe por qué lecturas son muy altas a veces
+            # for i in range(len(chann1)):
+            #     if chann1[i] > 100:
+            #         chann1[i] = 0
 
-            for item in chann1:
-                if item > 200:
-                    chann1.remove(item)
-
-            for item in chann2:
-                if item > 200:
-                    chann2.remove(item)
+            # for i in range(len(chann2)):
+            #     if chann2[i] > 100:
+            #         chann2[i] = 0
 
             ####
 
