@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 from matplotlib.mlab import psd
 
 from training_prep import training_preparation as tp
-from classifiers import svd_lineal as sl
+from classifiers import sl
 
 # Training
 x,y = tp("Izquierda, derecha, cerrado.txt")

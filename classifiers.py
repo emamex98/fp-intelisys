@@ -34,6 +34,12 @@ def train(x,y,clf,kf):
     acc = acc/5
     print('ACC = ', acc)
 
+def sl(x,y):
+    clf = svm.SVC(kernel = 'linear')
+    clf.train(x,y)
+
+    return clf
+
 def svd_lineal(x,y):
     # 5-fold cross-validation
     kf = KFold(n_splits=5, shuffle = True)
