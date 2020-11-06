@@ -36,7 +36,7 @@ def train(x,y,clf,kf):
 
 def sl(x,y):
     clf = svm.SVC(kernel = 'linear')
-    clf.train(x,y)
+    clf.fit(x,y)
 
     return clf
 
