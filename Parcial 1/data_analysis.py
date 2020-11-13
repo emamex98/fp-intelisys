@@ -3,8 +3,11 @@
 #------------------------------------------------------------------------------------------------------------------
 
 import numpy as np
+import json
 import matplotlib.pyplot as plt
 from matplotlib.mlab import psd
+import data_construction as dc
+import classifiers as classifiers
 
 
 # Read data file
@@ -72,7 +75,6 @@ for posture in training_samples:
             end_index = np.where(freq >= 60.0)[0][0]
             if not posture in psd_data_ch1:
                 psd_data_ch1[posture] = np.empty((0,end_index-start_index+1))
-            # print(psd_data_ch1[posture])
             psd_data_ch1[posture] = np.append(psd_data_ch1[posture],[power[start_index:end_index+1]], axis=0)
 
             power2, freq2 = psd(x2, NFFT = window_size, Fs = samp_rate)
@@ -102,6 +104,16 @@ for posture in training_samples:
 
 freq = [x for x in range(4,61)]
 
+for posture in psd_data_ch1:
+    psd_data_ch1[posture] = psd_data_ch1[posture].tolist()
+    psd_data_ch2[posture] = psd_data_ch2[posture].tolist()
+
+#json.dump(psd_data_ch1, open('psd_ch1.json', 'w'))
+#json.dump(psd_data_ch2, open('psd_ch2.json', 'w'))
+
+x, y = dc.create_matrix(psd_data_ch1, psd_data_ch2)
+#print(x)
+#print(y)
 # Plot Averge PSDs
 
 def plotAvg(figure, posture, title):
@@ -181,3 +193,26 @@ plotWindow(figure=202, posture='102.0', window=window)
 plotWindow(figure=203, posture='103.0', window=window)
 
 plt.show()
+
+if len(training_samples)==3:
+    print("Singlelayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_singlelayer_3c(x,y)
+    print("Multilayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_multilayer_3c(x,y)
+elif len(training_samples)==2:
+    print("Singlelayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_singlelayer_2c(x,y)
+    print("Multilayer NN")
+    #yC = dc.hot_encoding(y)
+    classifiers.nn_multilayer_2c(x,y)
+print("SVD Lineal")
+classifiers.svd_lineal(x,y)
+print("SVD Radial Base")
+classifiers.svd_radial(x,y)
+print("KNN")
+classifiers.knn(x,y)
+print("Decision Tree")
+classifiers.decision_tree(x,y)
