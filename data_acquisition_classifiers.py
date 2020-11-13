@@ -50,7 +50,7 @@ def calcPSD(channel, win_size, samp_rate):
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
 
-    return power[start_index:end_index], freq[start_index:end_index]
+    return power[start_index:end_index+1], freq[start_index:end_index+1]
 
 def calculate():
 
@@ -87,14 +87,20 @@ def calculate():
             elapsed_time += inc]"""
 
         x = [[]]
+        #print(psd_chann1)
         for i in psd_chann1:
             x[0].append(i)
 
         for i in psd_chann2:
             x[0].append(i)
         y_pred = clf.predict(x)
-        print(y_pred)
-        input()
+        if y_pred[0] == 101:
+            print(y_pred[0]," : Abierto")
+        elif y_pred[0] == 102:
+            print(y_pred[0]," : Cerrado")
+        elif y_pred[0] == 103:
+            print(y_pred[0]," : Natural")
+        #input()
     except socket.timeout:
         pass
     # Add x and y to lists
