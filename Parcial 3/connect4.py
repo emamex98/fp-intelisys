@@ -60,7 +60,8 @@ class ConnectFour(TwoPlayersGame):
         print()
 
     def possible_moves(self):
-        """ This method returns the possible moves according to the current game state. """        
+        """ This method returns the possible moves according to the current game state. """
+        print(self.player)        
         return [x for x in range(self.cols) if self.board[x][0]==NONE]
     
     def make_move(self, move):
